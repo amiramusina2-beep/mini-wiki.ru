@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-Википедия</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        wiki: {
+                            light: '#f8f9fa',
+                            dark: '#10141e',
+                            cardLight: '#ffffff',
+                            cardDark: '#1a202c',
+                            accent: '#3366cc',
+                            accentHover: '#254b9c',
+                            borderLight: '#eaecf0',
+                            borderDark: '#2d3748'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Merriweather', 'Georgia', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        .article-body p { margin-bottom: 1.25rem; line-height: 1.8; }
+        .article-body h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; border-bottom: 1px solid currentColor; opacity: 0.85; padding-bottom: 0.25rem; }
+        .article-body h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .article-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .article-body ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .article-body blockquote { border-left: 4px solid #3366cc; padding-left: 1rem; font-style: italic; margin: 1rem 0; opacity: 0.85; }
+        .article-body a { color: #3366cc; text-decoration: underline; text-underline-offset: 3px; }
+        .article-body img { max-width: 100%; height: auto; border-radius: 12px; margin: 1rem 0; }
+        
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
+    </style>
+</head>
+<body class="bg-wiki-light dark:bg-wiki-dark text-slate-800 dark:text-slate-200 min-h-full flex flex-col font-sans transition-colors duration-200">
+
+    <!-- Верхняя панель навигации -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-wiki-borderLight dark:border-wiki-borderDark transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Логотип -->
+            <div class="flex items-center gap-3 cursor-pointer select-none" id="logoBtn">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-serif font-bold shadow-md shadow-blue-500/20">
+                    В
+                </div>
+                <div>
+                    <span class="font-serif text-lg font-bold tracking-tight text-slate-900 dark:text-white">Мини-Википедия</span>
+                    <span class="hidden sm:inline-block text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full font-medium ml-2">RU v3.0</span>
+                </div>
+            </div>
+
+            <!-- Строка поиска с подсказами -->
+            <div class="flex-1 max-w-2xl relative">
+                <form id="searchForm" class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск в Википедии..." 
+                        class="w-full pl-10 pr-10 py-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-full border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none transition text-sm shadow-inner">
+                    <button type="button" id="clearSearchBtn" class="hidden absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+                <!-- Выпадающий список подсказок -->
+                <div id="searchSuggestions" class="hidden absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-wiki-borderLight dark:border-wiki-borderDark overflow-hidden z-50 max-h-80 overflow-y-auto"></div>
+            </div>
+
+            <!-- Правый блок кнопок -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Создать статью -->
+                <button id="openCreateModalBtn" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition shadow-sm">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Создать статью</span>
+                </button>
+
+                <!-- Случайная статья -->
+                <button id="randomBtn" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Случайная статья">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+
+                <!-- Переключатель темы -->
+                <button id="themeToggleBtn" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Смена темы">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+
+                <!-- Профиль / Авторизация -->
+                <button id="authModalBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition border border-slate-200 dark:border-slate-700">
+                    <i class="fa-solid fa-user-circle text-base text-blue-600 dark:text-blue-400"></i>
+                    <span id="userBtnLabel">Войти</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный рабочий стол -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Левое боковое меню (Sidebar) -->
+        <aside class="lg:col-span-3 space-y-6">
+            
+            <!-- Мобильная кнопка создания статьи -->
+            <button id="openCreateModalBtnMobile" class="sm:hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600 text-white font-medium text-sm shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Создать статью</span>
+            </button>
+
+            <!-- Категории -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark shadow-sm">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Категории знаний</h3>
+                <nav class="space-y-1">
+                    <button data-topic="Наука" class="topic-btn w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
+                        <span class="flex items-center gap-2.5"><i class="fa-solid fa-atom text-blue-500"></i> Наука</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                    </button>
+                    <button data-topic="Технологии" class="topic-btn w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
+                        <span class="flex items-center gap-2.5"><i class="fa-solid fa-microchip text-indigo-500"></i> Технологии</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                    </button>
+                    <button data-topic="История" class="topic-btn w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
+                        <span class="flex items-center gap-2.5"><i class="fa-solid fa-landmark text-amber-500"></i> История</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                    </button>
+                    <button data-topic="Искусство" class="topic-btn w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
+                        <span class="flex items-center gap-2.5"><i class="fa-solid fa-palette text-pink-500"></i> Искусство</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                    </button>
+                    <button data-topic="География" class="topic-btn w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
+                        <span class="flex items-center gap-2.5"><i class="fa-solid fa-earth-americas text-emerald-500"></i> География</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Раздел "Своя Вики" (Созданные локальные статьи) -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark shadow-sm">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                    <span>Своя Вики (Статьи)</span>
+                    <span id="customArticlesCount" class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                </h3>
+                <div id="customArticlesList" class="space-y-1.5 max-h-56 overflow-y-auto">
+                    <p class="text-xs text-slate-400 italic">Нет созданных статей</p>
+                </div>
+            </div>
+
+            <!-- Секретный блок модерации (Только для одобряющего аккаунта) -->
+            <div id="moderationBox" class="hidden bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-lg border border-indigo-500/30">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved"></i> Модерация
+                    </span>
+                    <span id="pendingCountBadge" class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <p class="text-xs text-indigo-200 mb-3">Заявки на публикацию статей в общую сеть</p>
+                <button id="openModerationModalBtn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl transition shadow">
+                    Открыть панель заявок
+                </button>
+            </div>
+
+            <!-- Оглавление статьи (генерируется динамически) -->
+            <div id="tocContainer" class="hidden bg-white dark:bg-slate-800 p-5 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark shadow-sm sticky top-20">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ol"></i> Оглавление
+                </h3>
+                <div id="tocList" class="space-y-1.5 text-sm max-h-[50vh] overflow-y-auto"></div>
+            </div>
+
+            <!-- История прочитанных статей (с возможностью удаления) -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Прочитанное</h3>
+                    <button id="clearHistoryBtn" class="text-xs text-slate-400 hover:text-red-500 transition" title="Очистить всю историю">
+                        Очистить
+                    </button>
+                </div>
+                <div id="historyList" class="space-y-2 text-sm max-h-60 overflow-y-auto">
+                    <span class="text-slate-400 italic text-xs">История пуста</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Центральная область чтения -->
+        <section class="lg:col-span-9 flex flex-col gap-6">
+            
+            <!-- Панель управления чтением -->
+            <div class="bg-white dark:bg-slate-800 px-5 py-3 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark flex flex-wrap items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 uppercase font-semibold">Шрифт:</span>
+                    <button id="fontSansBtn" class="px-2.5 py-1 text-xs rounded-lg font-sans bg-slate-100 dark:bg-slate-700 active font-bold">Без засечек</button>
+                    <button id="fontSerifBtn" class="px-2.5 py-1 text-xs rounded-lg font-serif bg-slate-100 dark:bg-slate-700 hover:bg-slate-200">С засечками</button>
+                    <button id="fontMonoBtn" class="px-2.5 py-1 text-xs rounded-lg font-mono bg-slate-100 dark:bg-slate-700 hover:bg-slate-200">Моно</button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1">
+                        <button id="zoomOutBtn" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs hover:bg-white dark:hover:bg-slate-600 transition"><i class="fa-solid fa-minus"></i></button>
+                        <span id="zoomLevel" class="text-xs font-medium px-2">100%</span>
+                        <button id="zoomInBtn" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs hover:bg-white dark:hover:bg-slate-600 transition"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+
+                    <button id="saveArticleBookmarkBtn" class="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-xs font-medium flex items-center gap-1.5 transition">
+                        <i class="fa-regular fa-bookmark" id="bookmarkIcon"></i>
+                        <span id="bookmarkText">В закладки</span>
+                    </button>
+
+                    <button id="shareBtn" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-medium flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Ссылка</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Индикатор загрузки -->
+            <div id="loadingState" class="hidden py-24 flex flex-col items-center justify-center text-slate-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p class="text-sm font-medium animate-pulse">Загрузка статьи из Википедии...</p>
+            </div>
+
+            <!-- Контейнер самой статьи -->
+            <article id="articleContainer" class="bg-white dark:bg-slate-800 p-6 sm:p-10 rounded-3xl border border-wiki-borderLight dark:border-wiki-borderDark shadow-sm min-h-[600px] transition-all">
+                
+                <header class="border-b border-wiki-borderLight dark:border-wiki-borderDark pb-6 mb-8">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span id="articleCategory" class="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 rounded-full uppercase tracking-wider">Википедия</span>
+                            <span id="articleAuthorBadge" class="hidden text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">Автор: <strong id="articleAuthorName"></strong></span>
+                        </div>
+                        <!-- Управление локальной статьей (Редактировать/Удалить) -->
+                        <div id="customArticleActions" class="hidden flex items-center gap-2">
+                            <button id="editCustomArticleBtn" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 font-medium transition">
+                                <i class="fa-solid fa-pen"></i> Редактировать
+                            </button>
+                            <button id="deleteCustomArticleBtn" class="text-xs px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-medium transition">
+                                <i class="fa-solid fa-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h1 id="articleTitle" class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+                        Искусственный интеллект
+                    </h1>
+                    <p id="articleSnippet" class="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-light leading-relaxed">
+                        Загрузка материалов...
+                    </p>
+                </header>
+
+                <!-- Содержимое статьи -->
+                <div id="articleBody" class="article-body text-slate-700 dark:text-slate-300 font-sans text-base leading-relaxed">
+                </div>
+            </article>
+
+            <!-- Источник статьи -->
+            <div id="articleFooter" class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-wiki-borderLight dark:border-wiki-borderDark flex items-center justify-between text-xs text-slate-500">
+                <span id="sourceText">Источник: Русская Википедия</span>
+                <a id="wikiExternalLink" href="#" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                    <span>Открыть оригинал</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Модальное окно: Создание / Редактирование статьи -->
+    <div id="createArticleModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-wiki-borderLight dark:border-wiki-borderDark relative flex flex-col max-h-[90vh]">
+            
+            <button id="closeCreateModalBtn" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h2 id="modalArticleHeader" class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Создать новую статью</h2>
+
+            <!-- Вкладки редактора и предпросмотра -->
+            <div class="flex border-b border-slate-200 dark:border-slate-700 mb-4">
+                <button id="tabEditBtn" class="px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-semibold text-sm">Редактор</button>
+                <button id="tabPreviewBtn" class="px-4 py-2 text-slate-500 font-medium text-sm hover:text-slate-700 dark:hover:text-slate-300">Предпросмотр</button>
+            </div>
+
+            <!-- Форма -->
+            <form id="articleForm" class="flex-1 flex flex-col overflow-y-auto space-y-4 pr-1">
+                <div id="editTabContent" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Заголовок статьи</label>
+                        <input type="text" id="formTitle" required placeholder="Например: Квантовые компьютеры" 
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Категория</label>
+                            <select id="formCategory" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm">
+                                <option value="Наука">Наука</option>
+                                <option value="Технологии">Технологии</option>
+                                <option value="История">История</option>
+                                <option value="Искусство">Искусство</option>
+                                <option value="География">География</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Режим публикации</label>
+                            <select id="formPublishMode" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm">
+                                <option value="draft">Черновик (Тест)</option>
+                                <option value="global">Заявка в общую сеть</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Содержание (Поддерживает Markdown / HTML)</label>
+                        <textarea id="formContent" rows="10" required placeholder="Напишите текст статьи здесь..."
+                            class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm font-mono"></textarea>
+                    </div>
+                </div>
+
+                <!-- Панель предпросмотра -->
+                <div id="previewTabContent" class="hidden p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 min-h-[300px] overflow-y-auto article-body">
+                    <h1 id="previewTitle" class="text-2xl font-bold font-serif mb-4">Предпросмотр заголовка</h1>
+                    <div id="previewBody" class="text-sm"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+                    <button type="button" id="cancelArticleBtn" class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium hover:bg-slate-200">
+                        Отмена
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition shadow-md shadow-blue-500/20">
+                        Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Авторизация / Регистрация -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-wiki-borderLight dark:border-wiki-borderDark relative">
+            
+            <button id="closeAuthModal" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Неавторизованный просмотр -->
+            <div id="authFormView">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                        <i class="fa-solid fa-user-lock"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white" id="authTitle">Вход в аккаунт</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Для создания и публикаций локальных статей</p>
+                </div>
+
+                <form id="authForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Никнейм</label>
+                        <input type="text" id="authUsername" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Пароль</label>
+                        <input type="password" id="authPassword" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+
+                    <!-- Математическая Каптча (От 15 до 100) -->
+                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                            <span>Подтвердите, что вы не робот:</span>
+                            <button type="button" id="refreshCaptchaBtn" class="text-blue-600 hover:text-blue-700 text-xs">
+                                <i class="fa-solid fa-rotate-right"></i> Обновить
+                            </button>
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <span id="captchaQuestion" class="font-mono font-bold text-base bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg">
+                                25 + 47 = ?
+                            </span>
+                            <input type="number" id="captchaAnswer" required placeholder="Ответ" 
+                                class="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none text-sm font-mono">
+                        </div>
+                    </div>
+
+                    <div id="authErrorMsg" class="hidden text-xs text-red-500 font-medium bg-red-50 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900"></div>
+
+                    <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-500/25">
+                        Войти
+                    </button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <button id="toggleAuthModeBtn" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                        Нет аккаунта? Зарегистрироваться
+                    </button>
+                </div>
+            </div>
+
+            <!-- Профиль пользователя -->
+            <div id="userProfileView" class="hidden text-center">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-lg shadow-blue-500/30">
+                    <span id="profileAvatar">U</span>
+                </div>
+                <h3 id="profileUsername" class="text-xl font-bold text-slate-900 dark:text-white mb-1">Пользователь</h3>
+                <span id="profileRole" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 mb-6">Участник</span>
+
+                <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                    <button id="logoutBtn" class="w-full py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 font-semibold rounded-xl text-sm transition">
+                        Выйти из аккаунта
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Модальное окно модерации заявок (Только для Oiyres) -->
+    <div id="moderationModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-wiki-borderLight dark:border-wiki-borderDark relative flex flex-col max-h-[85vh]">
+            
+            <button id="closeModerationModalBtn" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-indigo-500"></i> Панель модерации заявок
+            </h2>
+            <p class="text-xs text-slate-500 mb-4">Одобрите или отклоните статьи, отправленные пользователями в общую сеть.</p>
+
+            <div id="moderationList" class="flex-1 overflow-y-auto space-y-4 pr-1">
+                <!-- Динамически заполняемые заявки -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Всплывающие уведомления -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Скрипт приложения -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- Состояние приложения ---
+            const state = {
+                currentTheme: localStorage.getItem('mini_wiki_theme') || 'light',
+                fontFamily: 'sans',
+                fontSize: 100,
+                activeArticle: null,
+                currentUser: JSON.parse(localStorage.getItem('mini_wiki_current_user') || 'null'),
+                history: JSON.parse(localStorage.getItem('mini_wiki_history') || '[]'),
+                bookmarks: JSON.parse(localStorage.getItem('mini_wiki_bookmarks') || '[]'),
+                customArticles: JSON.parse(localStorage.getItem('mini_wiki_custom_articles') || '[]'),
+                pendingModeration: JSON.parse(localStorage.getItem('mini_wiki_pending_moderation') || '[]'),
+                authMode: 'login',
+                captchaAnswer: 0
+            };
+
+            // --- Секретный аккаунт Oiyres (пароль rk1234567) ---
+            function initSecretAccount() {
+                try {
+                    let users = JSON.parse(localStorage.getItem('mini_wiki_users') || '{}');
+                    const SECRET_USER = "Oiyres";
+                    const SECRET_PASS = "rk1234567";
+
+                    if (!users[SECRET_USER]) {
+                        users[SECRET_USER] = {
+                            password: SECRET_PASS,
+                            role: 'Модератор',
+                            protected: true
+                        };
+                        localStorage.setItem('mini_wiki_users', JSON.stringify(users));
+                    }
+                } catch (e) {
+                    console.error("Ошибка инициализации секретного аккаунта:", e);
+                }
+            }
+            initSecretAccount();
+
+            // --- Элементы интерфейса ---
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const searchSuggestions = document.getElementById('searchSuggestions');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const randomBtn = document.getElementById('randomBtn');
+            const logoBtn = document.getElementById('logoBtn');
+            
+            const articleContainer = document.getElementById('articleContainer');
+            const loadingState = document.getElementById('loadingState');
+            const articleTitle = document.getElementById('articleTitle');
+            const articleSnippet = document.getElementById('articleSnippet');
+            const articleBody = document.getElementById('articleBody');
+            const articleCategory = document.getElementById('articleCategory');
+            const articleAuthorBadge = document.getElementById('articleAuthorBadge');
+            const articleAuthorName = document.getElementById('articleAuthorName');
+            const customArticleActions = document.getElementById('customArticleActions');
+            const editCustomArticleBtn = document.getElementById('editCustomArticleBtn');
+            const deleteCustomArticleBtn = document.getElementById('deleteCustomArticleBtn');
+            const wikiExternalLink = document.getElementById('wikiExternalLink');
+            const sourceText = document.getElementById('sourceText');
+
+            const fontSansBtn = document.getElementById('fontSansBtn');
+            const fontSerifBtn = document.getElementById('fontSerifBtn');
+            const fontMonoBtn = document.getElementById('fontMonoBtn');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomLevel = document.getElementById('zoomLevel');
+            const saveArticleBookmarkBtn = document.getElementById('saveArticleBookmarkBtn');
+            const bookmarkIcon = document.getElementById('bookmarkIcon');
+            const bookmarkText = document.getElementById('bookmarkText');
+            const shareBtn = document.getElementById('shareBtn');
+
+            const tocContainer = document.getElementById('tocContainer');
+            const tocList = document.getElementById('tocList');
+            const historyList = document.getElementById('historyList');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+            const customArticlesList = document.getElementById('customArticlesList');
+            const customArticlesCount = document.getElementById('customArticlesCount');
+
+            // Авторизация
+            const authModalBtn = document.getElementById('authModalBtn');
+            const userBtnLabel = document.getElementById('userBtnLabel');
+            const authModal = document.getElementById('authModal');
+            const closeAuthModal = document.getElementById('closeAuthModal');
+            const authFormView = document.getElementById('authFormView');
+            const userProfileView = document.getElementById('userProfileView');
+            const authForm = document.getElementById('authForm');
+            const authUsername = document.getElementById('authUsername');
+            const authPassword = document.getElementById('authPassword');
+            const authTitle = document.getElementById('authTitle');
+            const authErrorMsg = document.getElementById('authErrorMsg');
+            const authSubmitBtn = document.getElementById('authSubmitBtn');
+            const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
+            const captchaQuestion = document.getElementById('captchaQuestion');
+            const captchaAnswerInput = document.getElementById('captchaAnswer');
+            const refreshCaptchaBtn = document.getElementById('refreshCaptchaBtn');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileUsername = document.getElementById('profileUsername');
+            const profileRole = document.getElementById('profileRole');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Создание статьи
+            const openCreateModalBtn = document.getElementById('openCreateModalBtn');
+            const openCreateModalBtnMobile = document.getElementById('openCreateModalBtnMobile');
+            const createArticleModal = document.getElementById('createArticleModal');
+            const closeCreateModalBtn = document.getElementById('closeCreateModalBtn');
+            const cancelArticleBtn = document.getElementById('cancelArticleBtn');
+            const articleForm = document.getElementById('articleForm');
+            const formTitle = document.getElementById('formTitle');
+            const formCategory = document.getElementById('formCategory');
+            const formPublishMode = document.getElementById('formPublishMode');
+            const formContent = document.getElementById('formContent');
+            const tabEditBtn = document.getElementById('tabEditBtn');
+            const tabPreviewBtn = document.getElementById('tabPreviewBtn');
+            const editTabContent = document.getElementById('editTabContent');
+            const previewTabContent = document.getElementById('previewTabContent');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewBody = document.getElementById('previewBody');
+
+            // Модерация
+            const moderationBox = document.getElementById('moderationBox');
+            const openModerationModalBtn = document.getElementById('openModerationModalBtn');
+            const moderationModal = document.getElementById('moderationModal');
+            const closeModerationModalBtn = document.getElementById('closeModerationModalBtn');
+            const moderationList = document.getElementById('moderationList');
+            const pendingCountBadge = document.getElementById('pendingCountBadge');
+
+            let editingArticleId = null;
+
+            // --- Переключение темы ---
+            function applyTheme(theme) {
+                state.currentTheme = theme;
+                localStorage.setItem('mini_wiki_theme', theme);
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+            applyTheme(state.currentTheme);
+
+            themeToggleBtn.addEventListener('click', () => {
+                applyTheme(state.currentTheme === 'dark' ? 'light' : 'dark');
+            });
+
+            // --- Уведомления (Toast) ---
+            function showToast(msg, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                const bg = type === 'error' ? 'bg-red-600' : type === 'success' ? 'bg-emerald-600' : 'bg-slate-800 dark:bg-slate-700';
+                toast.className = `${bg} text-white px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-medium flex items-center gap-2 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto`;
+                toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i> <span>${msg}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 10);
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // --- Каптча (Числа от 15 до 100) ---
+            function generateCaptcha() {
+                const n1 = Math.floor(Math.random() * 86) + 15; // 15..100
+                const n2 = Math.floor(Math.random() * 86) + 15;
+                const isPlus = Math.random() > 0.4;
+                
+                if (isPlus) {
+                    state.captchaAnswer = n1 + n2;
+                    captchaQuestion.textContent = `${n1} + ${n2} = ?`;
+                } else {
+                    const max = Math.max(n1, n2);
+                    const min = Math.min(n1, n2);
+                    state.captchaAnswer = max - min;
+                    captchaQuestion.textContent = `${max} - ${min} = ?`;
+                }
+                captchaAnswerInput.value = '';
+            }
+            generateCaptcha();
+            refreshCaptchaBtn.addEventListener('click', generateCaptcha);
+
+            // --- Вход / Регистрация ---
+            function updateAuthUI() {
+                if (state.currentUser) {
+                    userBtnLabel.textContent = state.currentUser.username;
+                    profileAvatar.textContent = state.currentUser.username.charAt(0).toUpperCase();
+                    profileUsername.textContent = state.currentUser.username;
+                    profileRole.textContent = state.currentUser.role || 'Пользователь';
+                    
+                    authFormView.classList.add('hidden');
+                    userProfileView.classList.remove('hidden');
+
+                    // Показать блок модерации только для секретного модератора Oiyres
+                    if (state.currentUser.username === 'Oiyres') {
+                        moderationBox.classList.remove('hidden');
+                        renderModerationList();
+                    } else {
+                        moderationBox.classList.add('hidden');
+                    }
+                } else {
+                    userBtnLabel.textContent = 'Войти';
+                    authFormView.classList.remove('hidden');
+                    userProfileView.classList.add('hidden');
+                    moderationBox.classList.add('hidden');
+                }
+            }
+
+            authModalBtn.addEventListener('click', () => {
+                generateCaptcha();
+                authErrorMsg.classList.add('hidden');
+                authModal.classList.remove('hidden');
+            });
+
+            closeAuthModal.addEventListener('click', () => authModal.classList.add('hidden'));
+
+            toggleAuthModeBtn.addEventListener('click', () => {
+                state.authMode = state.authMode === 'login' ? 'register' : 'login';
+                authTitle.textContent = state.authMode === 'login' ? 'Вход в аккаунт' : 'Регистрация';
+                authSubmitBtn.textContent = state.authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+                toggleAuthModeBtn.textContent = state.authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
+                authErrorMsg.classList.add('hidden');
+                generateCaptcha();
+            });
+
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                authErrorMsg.classList.add('hidden');
+
+                // Проверка каптчи
+                if (parseInt(captchaAnswerInput.value) !== state.captchaAnswer) {
+                    authErrorMsg.textContent = 'Неверный ответ на математический пример!';
+                    authErrorMsg.classList.remove('hidden');
+                    generateCaptcha();
+                    return;
+                }
+
+                const username = authUsername.value.trim();
+                const password = authPassword.value.trim();
+                let users = JSON.parse(localStorage.getItem('mini_wiki_users') || '{}');
+
+                if (state.authMode === 'login') {
+                    if (users[username] && users[username].password === password) {
+                        state.currentUser = {
+                            username: username,
+                            role: users[username].role || 'Участник'
+                        };
+                        localStorage.setItem('mini_wiki_current_user', JSON.stringify(state.currentUser));
+                        updateAuthUI();
+                        authModal.classList.add('hidden');
+                        showToast(`Добро пожаловать, ${username}!`, 'success');
+                    } else {
+                        authErrorMsg.textContent = 'Неверный никнейм или пароль';
+                        authErrorMsg.classList.remove('hidden');
+                    }
+                } else {
+                    // Запрет использования никнейма Oiyres другими
+                    if (username.toLowerCase() === 'oiyres' || users[username]) {
+                        authErrorMsg.textContent = 'Этот никнейм уже занят или зарезервирован!';
+                        authErrorMsg.classList.remove('hidden');
+                        return;
+                    }
+
+                    users[username] = { password: password, role: 'Участник' };
+                    localStorage.setItem('mini_wiki_users', JSON.stringify(users));
+                    state.currentUser = { username: username, role: 'Участник' };
+                    localStorage.setItem('mini_wiki_current_user', JSON.stringify(state.currentUser));
+
+                    updateAuthUI();
+                    authModal.classList.add('hidden');
+                    showToast('Регистрация успешно завершена!', 'success');
+                }
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                state.currentUser = null;
+                localStorage.removeItem('mini_wiki_current_user');
+                updateAuthUI();
+                authModal.classList.add('hidden');
+                showToast('Вы вышли из системы');
+            });
+
+            // --- Поиск и статья из Русской Википедии ---
+            async function fetchWikipediaArticle(title) {
+                loadingState.classList.remove('hidden');
+                articleContainer.classList.add('opacity-30');
+                
+                try {
+                    // Запрос к ru.wikipedia.org Action API
+                    const url = `https://ru.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|displaytitle|categories&format=json&origin=*`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+
+                    if (data.error || !data.parse) {
+                        throw new Error('Статья не найдена');
+                    }
+
+                    const parsedHtml = data.parse.text['*'];
+                    const pageTitle = data.parse.title;
+
+                    displayArticle({
+                        id: 'wiki_' + Date.now(),
+                        type: 'wiki',
+                        title: pageTitle,
+                        category: 'Википедия',
+                        contentHtml: parsedHtml,
+                        url: `https://ru.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`
+                    });
+
+                    addToHistory(pageTitle);
+                } catch (e) {
+                    console.warn("Не удалось загрузить статью из Википедии:", e);
+                    showToast('Не удалось загрузить статью из сети', 'error');
+                } finally {
+                    loadingState.classList.add('hidden');
+                    articleContainer.classList.remove('opacity-30');
+                }
+            }
+
+            // Перехват внутренних ссылок Википедии
+            articleBody.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('/wiki/')) {
+                        e.preventDefault();
+                        const wikiTitle = decodeURIComponent(href.replace('/wiki/', ''));
+                        fetchWikipediaArticle(wikiTitle);
+                    }
+                }
+            });
+
+            // Живой автокомплит поиск (ru.wikipedia.org)
+            let searchDebounce = null;
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearSearchBtn.classList.toggle('hidden', query.length === 0);
+
+                if (query.length < 2) {
+                    searchSuggestions.classList.add('hidden');
+                    return;
+                }
+
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(async () => {
+                    try {
+                        const url = `https://ru.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=6&namespace=0&format=json&origin=*`;
+                        const resp = await fetch(url);
+                        const data = await resp.json();
+                        
+                        const titles = data[1] || [];
+                        if (titles.length > 0) {
+                            searchSuggestions.innerHTML = titles.map(t => `
+                                <div class="suggestion-item px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700/60 cursor-pointer text-sm text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 last:border-0 flex items-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-xs text-slate-400"></i>
+                                    <span>${t}</span>
+                                </div>
+                            `).join('');
+                            
+                            searchSuggestions.querySelectorAll('.suggestion-item').forEach((el, idx) => {
+                                el.addEventListener('click', () => {
+                                    searchInput.value = titles[idx];
+                                    searchSuggestions.classList.add('hidden');
+                                    fetchWikipediaArticle(titles[idx]);
+                                });
+                            });
+
+                            searchSuggestions.classList.remove('hidden');
+                        } else {
+                            searchSuggestions.classList.add('hidden');
+                        }
+                    } catch (e) {
+                        console.error('Ошибка поиска:', e);
+                    }
+                }, 250);
+            });
+
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearchBtn.classList.add('hidden');
+                searchSuggestions.classList.add('hidden');
+            });
+
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = searchInput.value.trim();
+                if (q) {
+                    searchSuggestions.classList.add('hidden');
+                    fetchWikipediaArticle(q);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchForm.contains(e.target)) searchSuggestions.classList.add('hidden');
+            });
+
+            // --- Отображение статьи ---
+            function displayArticle(article) {
+                state.activeArticle = article;
+                articleTitle.textContent = article.title;
+                articleSnippet.textContent = article.category || 'Статья';
+                articleCategory.textContent = article.type === 'custom' ? 'Своя Вики' : 'Википедия';
+                
+                if (article.type === 'custom') {
+                    articleAuthorBadge.classList.remove('hidden');
+                    articleAuthorName.textContent = article.author || 'Аноним';
+                    customArticleActions.classList.remove('hidden');
+                    sourceText.textContent = `Локальная статья библиотеки Своя Вики`;
+                    wikiExternalLink.classList.add('hidden');
+                    articleBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(article.content) : article.content;
+                } else {
+                    articleAuthorBadge.classList.add('hidden');
+                    customArticleActions.classList.add('hidden');
+                    sourceText.textContent = `Источник: Русская Википедия`;
+                    wikiExternalLink.classList.remove('hidden');
+                    wikiExternalLink.href = article.url || '#';
+                    
+                    // Очистка HTML из Википедии
+                    let cleanHtml = (article.contentHtml || '')
+                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+                    articleBody.innerHTML = cleanHtml;
+                }
+
+                updateBookmarkState();
+                buildTableOfContents();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // --- Оглавление ---
+            function buildTableOfContents() {
+                const headings = articleBody.querySelectorAll('h2, h3');
+                tocList.innerHTML = '';
+
+                if (headings.length < 2) {
+                    tocContainer.classList.add('hidden');
+                    return;
+                }
+
+                headings.forEach((heading, idx) => {
+                    const id = `heading-${idx}`;
+                    heading.id = id;
+                    const btn = document.createElement('button');
+                    btn.className = `w-full text-left truncate py-1 px-2 rounded-lg text-xs hover:bg-slate-100 dark:hover:bg-slate-700/50 transition ${heading.tagName === 'H3' ? 'pl-4 text-slate-500' : 'font-medium text-slate-700 dark:text-slate-300'}`;
+                    btn.textContent = heading.textContent.replace(/\[править | править код\]/g, '');
+                    btn.onclick = () => heading.scrollIntoView({ behavior: 'smooth' });
+                    tocList.appendChild(btn);
+                });
+
+                tocContainer.classList.remove('hidden');
+            }
+
+            // --- Прочитанные статьи (История с удалением) ---
+            function addToHistory(title) {
+                state.history = state.history.filter(item => item !== title);
+                state.history.unshift(title);
+                if (state.history.length > 10) state.history.pop();
+                localStorage.setItem('mini_wiki_history', JSON.stringify(state.history));
+                renderHistory();
+            }
+
+            function renderHistory() {
+                if (state.history.length === 0) {
+                    historyList.innerHTML = `<span class="text-slate-400 italic text-xs">История пуста</span>`;
+                    return;
+                }
+
+                historyList.innerHTML = state.history.map((item, idx) => `
+                    <div class="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 text-xs font-medium text-slate-700 dark:text-slate-300 transition group">
+                        <button class="open-history-btn truncate text-left flex-1 flex items-center gap-2" data-idx="${idx}">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400 text-[10px]"></i>
+                            <span class="truncate">${item}</span>
+                        </button>
+                        <button class="delete-history-btn text-slate-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition" data-idx="${idx}" title="Удалить из прочитанного">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+                historyList.querySelectorAll('.open-history-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        fetchWikipediaArticle(state.history[idx]);
+                    });
+                });
+
+                historyList.querySelectorAll('.delete-history-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        state.history.splice(idx, 1);
+                        localStorage.setItem('mini_wiki_history', JSON.stringify(state.history));
+                        renderHistory();
+                        showToast('Запись удалена из прочитанного');
+                    });
+                });
+            }
+
+            clearHistoryBtn.addEventListener('click', () => {
+                state.history = [];
+                localStorage.removeItem('mini_wiki_history');
+                renderHistory();
+                showToast('История полностью очищена');
+            });
+
+            // --- Закладки ---
+            function updateBookmarkState() {
+                if (!state.activeArticle) return;
+                const isBookmarked = state.bookmarks.some(b => b.title === state.activeArticle.title);
+                bookmarkIcon.className = isBookmarked ? 'fa-solid fa-bookmark text-blue-600' : 'fa-regular fa-bookmark';
+                bookmarkText.textContent = isBookmarked ? 'В закладках' : 'В закладки';
+            }
+
+            saveArticleBookmarkBtn.addEventListener('click', () => {
+                if (!state.activeArticle) return;
+                const idx = state.bookmarks.findIndex(b => b.title === state.activeArticle.title);
+                if (idx > -1) {
+                    state.bookmarks.splice(idx, 1);
+                    showToast('Удалено из закладок');
+                } else {
+                    state.bookmarks.push({ title: state.activeArticle.title });
+                    showToast('Сохранено в закладки', 'success');
+                }
+                localStorage.setItem('mini_wiki_bookmarks', JSON.stringify(state.bookmarks));
+                updateBookmarkState();
+            });
+
+            // --- Шрифт и Масштаб ---
+            fontSansBtn.addEventListener('click', () => setFontFamily('sans'));
+            fontSerifBtn.addEventListener('click', () => setFontFamily('serif'));
+            fontMonoBtn.addEventListener('click', () => setFontFamily('mono'));
+
+            function setFontFamily(family) {
+                articleBody.classList.remove('font-sans', 'font-serif', 'font-mono');
+                articleBody.classList.add(`font-${family}`);
+            }
+
+            zoomInBtn.addEventListener('click', () => {
+                if (state.fontSize < 140) {
+                    state.fontSize += 10;
+                    zoomLevel.textContent = `${state.fontSize}%`;
+                    articleBody.style.fontSize = `${state.fontSize / 100}rem`;
+                }
+            });
+
+            zoomOutBtn.addEventListener('click', () => {
+                if (state.fontSize > 80) {
+                    state.fontSize -= 10;
+                    zoomLevel.textContent = `${state.fontSize}%`;
+                    articleBody.style.fontSize = `${state.fontSize / 100}rem`;
+                }
+            });
+
+            shareBtn.addEventListener('click', () => {
+                const dummy = document.createElement('input');
+                document.body.appendChild(dummy);
+                dummy.value = window.location.href;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                showToast('Ссылка скопирована в буфер обмена!', 'success');
+            });
+
+            // --- Создание и Редактирование локальных статей (Своя Вики) ---
+            function openCreateModal(editArticle = null) {
+                if (!state.currentUser) {
+                    showToast('Пожалуйста, войдите в аккаунт для создания статей', 'error');
+                    authModalBtn.click();
+                    return;
+                }
+
+                if (editArticle) {
+                    editingArticleId = editArticle.id;
+                    formTitle.value = editArticle.title;
+                    formCategory.value = editArticle.category;
+                    formContent.value = editArticle.content;
+                    document.getElementById('modalArticleHeader').textContent = 'Редактировать статью';
+                } else {
+                    editingArticleId = null;
+                    articleForm.reset();
+                    document.getElementById('modalArticleHeader').textContent = 'Создать новую статью';
+                }
+
+                tabEditBtn.click();
+                createArticleModal.classList.remove('hidden');
+            }
+
+            openCreateModalBtn.addEventListener('click', () => openCreateModal());
+            openCreateModalBtnMobile.addEventListener('click', () => openCreateModal());
+            closeCreateModalBtn.addEventListener('click', () => createArticleModal.classList.add('hidden'));
+            cancelArticleBtn.addEventListener('click', () => createArticleModal.classList.add('hidden'));
+
+            // Вкладки предпросмотра
+            tabEditBtn.addEventListener('click', () => {
+                tabEditBtn.className = "px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-semibold text-sm";
+                tabPreviewBtn.className = "px-4 py-2 text-slate-500 font-medium text-sm hover:text-slate-700 dark:hover:text-slate-300";
+                editTabContent.classList.remove('hidden');
+                previewTabContent.classList.add('hidden');
+            });
+
+            tabPreviewBtn.addEventListener('click', () => {
+                tabPreviewBtn.className = "px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-semibold text-sm";
+                tabEditBtn.className = "px-4 py-2 text-slate-500 font-medium text-sm hover:text-slate-700 dark:hover:text-slate-300";
+                editTabContent.classList.add('hidden');
+                previewTabContent.classList.remove('hidden');
+
+                previewTitle.textContent = formTitle.value || 'Без заголовка';
+                previewBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(formContent.value || 'Пустое содержание') : formContent.value;
+            });
+
+            articleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = formTitle.value.trim();
+                const category = formCategory.value;
+                const mode = formPublishMode.value;
+                const content = formContent.value.trim();
+
+                if (!title || !content) return;
+
+                // Если публикует Oiyres — выкладывается сразу в общую сеть
+                const isAutoApproved = state.currentUser.username === 'Oiyres' || mode === 'draft';
+
+                if (!isAutoApproved) {
+                    // Отправка заявки на модерацию Oiyres
+                    state.pendingModeration.push({
+                        id: 'pending_' + Date.now(),
+                        title: title,
+                        category: category,
+                        content: content,
+                        author: state.currentUser.username,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    });
+                    localStorage.setItem('mini_wiki_pending_moderation', JSON.stringify(state.pendingModeration));
+                    showToast('Заявка отправлена модератору Oiyres на утверждение!', 'success');
+                } else {
+                    if (editingArticleId) {
+                        const idx = state.customArticles.findIndex(a => a.id === editingArticleId);
+                        if (idx > -1) {
+                            state.customArticles[idx] = {
+                                ...state.customArticles[idx],
+                                title, category, content
+                            };
+                        }
+                    } else {
+                        const newArt = {
+                            id: 'custom_' + Date.now(),
+                            type: 'custom',
+                            title: title,
+                            category: category,
+                            content: content,
+                            author: state.currentUser.username,
+                            date: new Date().toLocaleDateString('ru-RU')
+                        };
+                        state.customArticles.unshift(newArt);
+                        displayArticle(newArt);
+                    }
+
+                    localStorage.setItem('mini_wiki_custom_articles', JSON.stringify(state.customArticles));
+                    renderCustomArticlesList();
+                    showToast(mode === 'draft' ? 'Черновик сохранён' : 'Статья успешно опубликована!', 'success');
+                }
+
+                createArticleModal.classList.add('hidden');
+            });
+
+            function renderCustomArticlesList() {
+                customArticlesCount.textContent = state.customArticles.length;
+
+                if (state.customArticles.length === 0) {
+                    customArticlesList.innerHTML = `<p class="text-xs text-slate-400 italic">Нет созданных статей</p>`;
+                    return;
+                }
+
+                customArticlesList.innerHTML = state.customArticles.map((art, idx) => `
+                    <button class="open-custom-art-btn w-full text-left truncate py-1.5 px-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center justify-between" data-idx="${idx}">
+                        <span class="truncate">${art.title}</span>
+                        <i class="fa-solid fa-pen-nib text-[10px] text-blue-500"></i>
+                    </button>
+                `).join('');
+
+                customArticlesList.querySelectorAll('.open-custom-art-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        displayArticle(state.customArticles[idx]);
+                    });
+                });
+            }
+
+            editCustomArticleBtn.addEventListener('click', () => {
+                if (state.activeArticle && state.activeArticle.type === 'custom') {
+                    openCreateModal(state.activeArticle);
+                }
+            });
+
+            deleteCustomArticleBtn.addEventListener('click', () => {
+                if (state.activeArticle && state.activeArticle.type === 'custom') {
+                    if (confirm('Вы уверены, что хотите удалить эту статью?')) {
+                        state.customArticles = state.customArticles.filter(a => a.id !== state.activeArticle.id);
+                        localStorage.setItem('mini_wiki_custom_articles', JSON.stringify(state.customArticles));
+                        renderCustomArticlesList();
+                        showToast('Статья удалена');
+                        fetchWikipediaArticle('Искусственный интеллект');
+                    }
+                }
+            });
+
+            // --- Панель модерации (Только для Oiyres) ---
+            openModerationModalBtn.addEventListener('click', () => {
+                renderModerationList();
+                moderationModal.classList.remove('hidden');
+            });
+
+            closeModerationModalBtn.addEventListener('click', () => moderationModal.classList.add('hidden'));
+
+            function renderModerationList() {
+                pendingCountBadge.textContent = state.pendingModeration.length;
+
+                if (state.pendingModeration.length === 0) {
+                    moderationList.innerHTML = `<p class="text-xs text-slate-400 italic py-6 text-center">Нет новых заявок на публикацию.</p>`;
+                    return;
+                }
+
+                moderationList.innerHTML = state.pendingModeration.map((item, idx) => `
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-blue-600">${item.category}</span>
+                            <span class="text-[10px] text-slate-400">Автор: ${item.author} (${item.date})</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white">${item.title}</h4>
+                        <p class="text-xs text-slate-500 line-clamp-3 font-mono">${item.content}</p>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button class="reject-btn px-3 py-1.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium" data-idx="${idx}">
+                                Отклонить
+                            </button>
+                            <button class="approve-btn px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm" data-idx="${idx}">
+                                Одобрить
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                moderationList.querySelectorAll('.approve-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        const approvedItem = state.pendingModeration[idx];
+
+                        // Публикация в общую сеть
+                        state.customArticles.unshift({
+                            id: 'custom_' + Date.now(),
+                            type: 'custom',
+                            title: approvedItem.title,
+                            category: approvedItem.category,
+                            content: approvedItem.content,
+                            author: approvedItem.author,
+                            date: approvedItem.date
+                        });
+
+                        state.pendingModeration.splice(idx, 1);
+                        localStorage.setItem('mini_wiki_custom_articles', JSON.stringify(state.customArticles));
+                        localStorage.setItem('mini_wiki_pending_moderation', JSON.stringify(state.pendingModeration));
+
+                        renderCustomArticlesList();
+                        renderModerationList();
+                        showToast(`Заявка "${approvedItem.title}" одобрена!`, 'success');
+                    });
+                });
+
+                moderationList.querySelectorAll('.reject-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        state.pendingModeration.splice(idx, 1);
+                        localStorage.setItem('mini_wiki_pending_moderation', JSON.stringify(state.pendingModeration));
+                        renderModerationList();
+                        showToast('Заявка отклонена');
+                    });
+                });
+            }
+
+            // Навигационные клики
+            logoBtn.addEventListener('click', () => fetchWikipediaArticle('Заглавная страница'));
+            
+            randomBtn.addEventListener('click', async () => {
+                try {
+                    const resp = await fetch('https://ru.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*');
+                    const data = await resp.json();
+                    if (data.query && data.query.random.length > 0) {
+                        fetchWikipediaArticle(data.query.random[0].title);
+                    }
+                } catch (e) {
+                    fetchWikipediaArticle('Космос');
+                }
+            });
+
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const topic = btn.getAttribute('data-topic');
+                    fetchWikipediaArticle(topic);
+                });
+            });
+
+            // Старт
+            renderHistory();
+            renderCustomArticlesList();
+            updateAuthUI();
+            fetchWikipediaArticle('Искусственный интеллект');
+        });
+    </script>
+</body>
+</html>
