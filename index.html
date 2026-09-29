@@ -509,18 +509,21 @@
 
     <script>
         // Твои настройки из панели Firebase (замени на свои ключи после создания проекта)
+    // Твои настройки из панели Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA2hu_Nrow0cC-EFzPHwE5Fww2ah_aC4Gw",
         authDomain: "my-base-8a9da.firebaseapp.com",
         projectId: "my-base-8a9da",
         storageBucket: "my-base-8a9da.firebasestorage.app",
-        messagingSenderId: "1:559297046854:web:c4d0eef2fe0b2f4daadd47",
-        appId: "G-9Z4C1N7GNP"
+        messagingSenderId: "559297046854",
+        appId: "1:559297046854:web:c4d0eef2fe0b2f4daadd47",
+        measurementId: "G-9Z4C1N7GNP"
     };
 
-// Инициализируем Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+    // Инициализируем Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+        
         // APP STATE MANAGEMENT
         const APP_STATE = {
             currentUser: null,
