@@ -962,7 +962,15 @@
             displayArticle(newArticle.id, 'local');
         }
 
-        function renderModerationList() {
+function renderModerationList() {
+            
+            const savedPending = localStorage.getItem('mini_wiki_pending');
+            if (savedPending) {
+                APP_STATE.pendingArticles = JSON.parse(savedPending);
+            } else {
+                APP_STATE.pendingArticles = [];
+            }
+
             const container = document.getElementById('moderationListContainer');
             if (!container) return;
 
