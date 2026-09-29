@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-full light">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Мини-Википедия — Энциклопедия</title>
@@ -28,6 +29,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -504,6 +508,19 @@
     <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
+        // Твои настройки из панели Firebase (замени на свои ключи после создания проекта)
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2hu_Nrow0cC-EFzPHwE5Fww2ah_aC4Gw",
+        authDomain: "my-base-8a9da.firebaseapp.com",
+        projectId: "my-base-8a9da",
+        storageBucket: "my-base-8a9da.firebasestorage.app",
+        messagingSenderId: "1:559297046854:web:c4d0eef2fe0b2f4daadd47",
+        appId: "G-9Z4C1N7GNP"
+    };
+
+// Инициализируем Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
         // APP STATE MANAGEMENT
         const APP_STATE = {
             currentUser: null,
@@ -938,39 +955,44 @@
             if (!title || !content) return;
 
             const newArticle = {
-                id: 'art-' + Date.now(),
                 title,
                 category,
                 content,
                 author: APP_STATE.currentUser.username,
                 mode,
-                createdAt: new Date().toISOString()
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             if (mode === 'network' && APP_STATE.currentUser.username !== 'Oiyres') {
-                APP_STATE.pendingArticles.push(newArticle);
-                localStorage.setItem('mini_wiki_pending', JSON.stringify(APP_STATE.pendingArticles));
-                showToast('Статья отправлена модератору Oiyres', 'success');
+                // 🚀 Сохраняем заявку на модерацию в облако Firebase
+                db.collection('pendingArticles').add(newArticle)
+                    .then(() => {
+                        showToast('Статья отправлена модератору Oiyres', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка отправки на модерацию: ', error);
+                        showToast('Ошибка при отправке статьи', 'error');
+                    });
             } else {
-                APP_STATE.articles.unshift(newArticle);
-                localStorage.setItem('mini_wiki_articles', JSON.stringify(APP_STATE.articles));
-                showToast('Статья опубликована!', 'success');
+                // 🚀 Публикуем статью сразу в облако Firebase
+                db.collection('articles').add(newArticle)
+                    .then((docRef) => {
+                        showToast('Статья опубликована!', 'success');
+                        // Если нужно сразу отобразить созданную статью
+                        displayArticle(docRef.id, 'network');
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка публикации: ', error);
+                        showToast('Ошибка при публикации', 'error');
+                    });
             }
 
             document.getElementById('articleForm').reset();
             updateUIState();
-            displayArticle(newArticle.id, 'local');
         }
 
 function renderModerationList() {
             
-            const savedPending = localStorage.getItem('mini_wiki_pending');
-            if (savedPending) {
-                APP_STATE.pendingArticles = JSON.parse(savedPending);
-            } else {
-                APP_STATE.pendingArticles = [];
-            }
-
             const container = document.getElementById('moderationListContainer');
             if (!container) return;
 
@@ -990,10 +1012,10 @@ function renderModerationList() {
                     </div>
                     <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl font-mono">${art.content}</p>
                     <div class="flex items-center justify-end gap-2 pt-1">
-                        <button onclick="rejectPendingArticle('${art.id}')" class="px-3 py-1 text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 rounded-lg">
+                        <button onclick="rejectPendingArticle('${art.firebaseId}')" class="px-3 py-1 text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 rounded-lg">
                             Отклонить
                         </button>
-                        <button onclick="approvePendingArticle('${art.id}')" class="px-3.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">
+                        <button onclick="approvePendingArticle('${art.firebaseId}')" class="px-3.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">
                             Одобрить
                         </button>
                     </div>
@@ -1122,6 +1144,26 @@ function renderModerationList() {
                     </button>
                 </div>
             `).join('');
+        }
+
+        function initModerationListener() {
+            const container = document.getElementById('moderationListContainer');
+            if (!container) return;
+
+            // 🌟 Слушаем коллекцию 'pendingArticles' в Firebase в реальном времени!
+            db.collection('pendingArticles').onSnapshot((snapshot) => {
+                APP_STATE.pendingArticles = [];
+                
+                snapshot.forEach((doc) => {
+                    APP_STATE.pendingArticles.push({
+                        firebaseId: doc.id, 
+                        ...doc.data()
+                    });
+                });
+
+                // Перерисовываем список модерации
+                renderModerationList();
+            });
         }
 
         // LIVE SEARCH HANDLER
