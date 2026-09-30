@@ -994,8 +994,8 @@
             updateUIState();
         }
 
-function renderModerationList() {
-            
+        // Prikaz liste moderacije sa dugmetom za predloženi pregled
+        function renderModerationList() {
             const container = document.getElementById('moderationListContainer');
             if (!container) return;
 
@@ -1014,37 +1014,83 @@ function renderModerationList() {
                         <span class="px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-bold rounded-md">На проверке</span>
                     </div>
                     <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl font-mono">${art.content}</p>
-                    <div class="flex items-center justify-end gap-2 pt-1">
-                        <button onclick="rejectPendingArticle('${art.firebaseId}')" class="px-3 py-1 text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 rounded-lg">
-                            Отклонить
+                    
+                    <div class="flex items-center justify-between pt-1">
+                        <!-- Dugme za predprosmotr (pregled) -->
+                        <button onclick="previewPendingArticle('${art.firebaseId}')" class="px-3 py-1 text-xs font-semibold text-wikiBlue-600 bg-wikiBlue-50 dark:bg-wikiBlue-950/40 hover:bg-wikiBlue-100 rounded-lg">
+                            <i class="fa-solid fa-eye mr-1"></i> Предпросмотр
                         </button>
-                        <button onclick="approvePendingArticle('${art.firebaseId}')" class="px-3.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">
-                            Одобрить
-                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <button onclick="rejectPendingArticle('${art.firebaseId}')" class="px-3 py-1 text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 rounded-lg">
+                                Отклонить
+                            </button>
+                            <button onclick="approvePendingArticle('${art.firebaseId}')" class="px-3.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">
+                                Одобрить
+                            </button>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function approvePendingArticle(id) {
-            const idx = APP_STATE.pendingArticles.findIndex(a => a.id === id);
-            if (idx !== -1) {
-                const approved = APP_STATE.pendingArticles.splice(idx, 1)[0];
-                APP_STATE.articles.unshift(approved);
-                localStorage.setItem('mini_wiki_pending', JSON.stringify(APP_STATE.pendingArticles));
-                localStorage.setItem('mini_wiki_articles', JSON.stringify(APP_STATE.articles));
-                showToast('Статья успешно одобрена!', 'success');
-                renderModerationList();
-                updateUIState();
-            }
+        // Odobravanje članka preko Firebase-a
+        function approvePendingArticle(firebaseId) {
+            const art = APP_STATE.pendingArticles.find(a => a.firebaseId === firebaseId);
+            if (!art) return;
+
+            // 1. Dodajemo članak u glavnu kolekciju 'articles' u Firebase-u
+            db.collection('articles').add({
+                title: art.title,
+                category: art.category,
+                content: art.content,
+                author: art.author,
+                mode: 'network',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                // 2. Brišemo iz kolekcije 'pendingArticles'
+                return db.collection('pendingArticles').doc(firebaseId).delete();
+            }).then(() => {
+                showToast('Статья успешно одобрена и опубликована!', 'success');
+            }).catch((error) => {
+                console.error('Greška pri odobravanju: ', error);
+                showToast('Ошибка при одобрении статьи', 'error');
+            });
         }
 
-        function rejectPendingArticle(id) {
-            APP_STATE.pendingArticles = APP_STATE.pendingArticles.filter(a => a.id !== id);
-            localStorage.setItem('mini_wiki_pending', JSON.stringify(APP_STATE.pendingArticles));
-            showToast('Заявка отклонена', 'info');
-            renderModerationList();
-            updateUIState();
+        // Odbacivanje članka preko Firebase-a
+        function rejectPendingArticle(firebaseId) {
+            db.collection('pendingArticles').doc(firebaseId).delete()
+                .then(() => {
+                    showToast('Заявка отклонена и удалена', 'info');
+                })
+                .catch((error) => {
+                    console.error('Greška pri odbijanju: ', error);
+                    showToast('Ошибка при отклонении', 'error');
+                });
+        }
+
+        // Funkcija za predprosmotr članka na čekanju
+        function previewPendingArticle(firebaseId) {
+            const art = APP_STATE.pendingArticles.find(a => a.firebaseId === firebaseId);
+            if (!art) return;
+
+            const container = document.getElementById('articleContentContainer');
+            const titleEl = document.getElementById('articleTitle');
+            const metaBadge = document.getElementById('articleMetaBadge');
+            const externalBtn = document.getElementById('externalWikiBtn');
+
+            if (!container) return;
+
+            switchView('article');
+            if (titleEl) titleEl.textContent = `[ПРОВЕРКА] ${art.title}`;
+            if (container) container.innerHTML = parseMarkdown(art.content);
+            if (externalBtn) externalBtn.classList.add('hidden');
+            if (metaBadge) {
+                metaBadge.innerHTML = `<span class="bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-md font-bold text-[11px]">Модерация • Автор: ${art.author}</span>`;
+            }
+            
+            showToast('Режим предпросмотра заявки', 'info');
         }
 
         // VIEW SWITCHER & DRAWER
