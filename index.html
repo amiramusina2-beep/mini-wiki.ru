@@ -656,20 +656,29 @@
                         local = allCloud.find(a => a.id === titleOrId || a.title.toLowerCase() === titleOrId.toLowerCase());
                     }
 
-                    if (!local) throw new Error('Статья не найдена в вашей сети');
-
-                    articleData = {
-                        id: local.id,
-                        title: local.title,
-                        html: parseMarkdown(local.content),
-                        source: 'local',
-                        author: local.author,
-                        category: local.category
-                    };
+                    // 🌟 Если статьи вообще нет в базе — показываем приветственную заглушку вместо ошибки!
+                    if (!local) {
+                        articleData = {
+                            title: titleOrId,
+                            html: `<p>Эта статья еще не создана. Вы можете стать первым автором!</p><br><button onclick="switchView('create')" class="px-4 py-2 bg-wikiBlue-500 text-white rounded-xl text-xs font-bold">Создать статью "${titleOrId}"</button>`,
+                            source: 'local',
+                            author: 'Система',
+                            category: 'Общее'
+                        };
+                    } else {
+                        articleData = {
+                            id: local.id,
+                            title: local.title,
+                            html: parseMarkdown(local.content),
+                            source: 'local',
+                            author: local.author,
+                            category: local.category
+                        };
+                    }
 
                     if (externalBtn) externalBtn.classList.add('hidden');
                     if (metaBadge) {
-                        metaBadge.innerHTML = `<span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-md font-bold text-[11px]">Своя Вики</span><span class="text-xs text-slate-400">Автор: ${local.author}</span>`;
+                        metaBadge.innerHTML = `<span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-md font-bold text-[11px]">Своя Вики</span><span class="text-xs text-slate-400">Автор: ${articleData.author}</span>`;
                     }
                 }
 
