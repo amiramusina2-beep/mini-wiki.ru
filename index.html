@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru" class="h-full light">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Мини-Википедия — Энциклопедия</title>
@@ -81,7 +80,6 @@
         .article-content blockquote { border-left: 4px solid #3366cc; padding-left: 1rem; margin: 1rem 0; color: #475569; font-style: italic; }
         .dark .article-content blockquote { color: #94a3b8; }
 
-        /* Custom Touch Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 9999px; }
@@ -94,7 +92,6 @@
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-3 sm:px-6 py-2.5 shadow-sm">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
             
-            <!-- Left Header: Mobile Burger & Logo -->
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                 <button id="mobileMenuBtn" aria-label="Открыть меню" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 touch-manipulation">
                     <i class="fa-solid fa-bars text-lg sm:text-xl"></i>
@@ -110,7 +107,6 @@
                 </a>
             </div>
 
-            <!-- Center Header: Responsive Search Input -->
             <div class="flex-1 max-w-2xl relative px-1">
                 <div class="relative flex items-center">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-xs sm:text-sm"></i>
@@ -121,42 +117,31 @@
                         <i class="fa-solid fa-xmark text-xs sm:text-sm"></i>
                     </button>
                 </div>
-                <!-- Dropdown Live Suggestions -->
                 <div id="searchResults" class="hidden absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                 </div>
             </div>
 
-            <!-- Right Header: Controls & Actions -->
             <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-                <!-- Random Article Button -->
                 <button id="randomArticleBtn" title="Случайная статья" class="p-2 sm:p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition touch-manipulation">
                     <i class="fa-solid fa-dice text-sm sm:text-base text-purple-500"></i>
                 </button>
 
-                <!-- Theme Switcher -->
                 <button id="themeToggleBtn" title="Сменить тему" class="p-2 sm:p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition touch-manipulation">
                     <i class="fa-solid fa-moon dark:hidden text-sm sm:text-base"></i>
                     <i class="fa-solid fa-sun hidden dark:inline text-amber-400 text-sm sm:text-base"></i>
                 </button>
 
-                <!-- User Account Container -->
-                <div id="userAccountContainer">
-                    <!-- Populated dynamically -->
-                </div>
+                <div id="userAccountContainer"></div>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT CONTAINER -->
     <div class="flex-1 flex max-w-7xl w-full mx-auto relative">
-        
-        <!-- Mobile Sidebar Backdrop Overlay -->
         <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity opacity-0"></div>
 
-        <!-- SIDEBAR NAVIGATION (Desktop Column & Mobile Slide Drawer) -->
         <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-64 bg-white dark:bg-slate-900 lg:bg-transparent lg:dark:bg-transparent border-r lg:border-r-0 border-slate-200 dark:border-slate-800 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0 p-4 space-y-4 overflow-y-auto">
             
-            <!-- Mobile Drawer Close Header -->
             <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 lg:hidden">
                 <div class="flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-wikiBlue-500 text-white flex items-center justify-center font-bold text-sm">W</div>
@@ -167,13 +152,11 @@
                 </button>
             </div>
 
-            <!-- Create Article CTA Button -->
             <button data-action="nav-create" class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl text-white bg-wikiBlue-500 hover:bg-wikiBlue-600 transition font-semibold text-xs sm:text-sm shadow-md shadow-wikiBlue-500/20 active:scale-95 touch-manipulation">
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span>+ Создать статью</span>
             </button>
 
-            <!-- Navigation Sections -->
             <div class="space-y-1">
                 <button data-action="nav-home" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition text-xs sm:text-sm font-medium active">
                     <i class="fa-solid fa-house w-4 text-center text-wikiBlue-500"></i>
@@ -196,7 +179,6 @@
                     <span id="myArticlesBadge" class="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
 
-                <!-- Secret Moderation Tab (Oiyres) -->
                 <button id="moderationNavBtn" data-action="nav-moderation" class="nav-item hidden w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition text-xs sm:text-sm font-semibold">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-user-shield w-4 text-center"></i>
@@ -206,7 +188,6 @@
                 </button>
             </div>
 
-            <!-- Categories Widget -->
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Категории</span>
                 <div class="space-y-1 text-xs">
@@ -233,16 +214,13 @@
                 </div>
             </div>
 
-            <!-- Table of Contents Widget (Dynamic) -->
             <div id="sidebarTocBox" class="hidden bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block flex items-center justify-between">
                     <span><i class="fa-solid fa-list-ol mr-1.5 text-wikiBlue-500"></i>Оглавление</span>
                 </span>
-                <ul id="sidebarTocList" class="space-y-1 text-xs max-h-52 overflow-y-auto pr-1">
-                </ul>
+                <ul id="sidebarTocList" class="space-y-1 text-xs max-h-52 overflow-y-auto pr-1"></ul>
             </div>
 
-            <!-- History Navigation Widget -->
             <button data-action="nav-history" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-medium">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-clock-rotate-left w-4 text-center text-blue-500"></i>
@@ -255,12 +233,8 @@
         <!-- MAIN CONTENT VIEW DISPLAY -->
         <main class="flex-1 p-3 sm:p-6 lg:p-8 flex flex-col min-w-0">
             
-            <!-- VIEW 1: ARTICLE READER VIEW -->
             <div id="articleView" class="view-panel space-y-4 max-w-4xl mx-auto w-full">
-                
-                <!-- Desktop & Mobile Reader Control Toolbar -->
                 <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
-                    <!-- Typography Selector -->
                     <div class="flex items-center gap-1 sm:gap-2">
                         <span class="text-[11px] font-bold uppercase text-slate-400 mr-1 hidden sm:inline">Шрифт:</span>
                         <button id="fontSansBtn" class="font-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold active">Sans</button>
@@ -268,22 +242,18 @@
                         <button id="fontMonoBtn" class="font-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-mono">Mono</button>
                     </div>
 
-                    <!-- Zoom & Controls -->
                     <div class="flex items-center gap-2">
-                        <!-- Zoom Controls -->
                         <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 text-xs">
                             <button id="zoomOutBtn" class="px-2 py-0.5 rounded hover:bg-white dark:hover:bg-slate-700 transition" title="Уменьшить">-</button>
                             <span id="zoomVal" class="px-1.5 font-semibold text-[11px]">100%</span>
                             <button id="zoomInBtn" class="px-2 py-0.5 rounded hover:bg-white dark:hover:bg-slate-700 transition" title="Увеличить">+</button>
                         </div>
 
-                        <!-- Bookmark Button -->
                         <button id="bookmarkToggleBtn" class="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-100 text-xs font-semibold flex items-center gap-1.5 transition">
                             <i id="bookmarkBtnIcon" class="fa-regular fa-bookmark"></i>
                             <span class="hidden sm:inline" id="bookmarkBtnText">В закладки</span>
                         </button>
 
-                        <!-- Copy Link -->
                         <button id="copyArticleLinkBtn" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
                             <i class="fa-solid fa-share-nodes"></i>
                             <span class="hidden sm:inline">Ссылка</span>
@@ -291,14 +261,10 @@
                     </div>
                 </div>
 
-                <!-- Main Reading Paper Canvas -->
                 <article id="articleContainer" class="bg-white dark:bg-slate-900 p-5 sm:p-8 lg:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[500px]">
-                    
                     <header class="border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2" id="articleMetaBadge">
-                                <!-- Dynamic source tag -->
-                            </div>
+                            <div class="flex items-center gap-2" id="articleMetaBadge"></div>
                             <a id="externalWikiBtn" href="#" target="_blank" rel="noopener" class="hidden text-xs text-wikiBlue-600 dark:text-wikiBlue-400 hover:underline flex items-center gap-1 font-semibold">
                                 <span>Оригинал в Вики</span>
                                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
@@ -310,7 +276,6 @@
                         </h1>
                     </header>
 
-                    <!-- Article Content Container -->
                     <div id="articleContentContainer" class="article-content font-sans-mode text-sm sm:text-base text-slate-800 dark:text-slate-200">
                         <div class="p-12 text-center text-slate-400">
                             <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-wikiBlue-500"></i>
@@ -320,14 +285,12 @@
                 </article>
             </div>
 
-            <!-- VIEW 2: CREATE / EDIT ARTICLE FORM -->
             <div id="createView" class="view-panel hidden max-w-3xl mx-auto w-full space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Новая статья</h1>
                         <p class="text-xs text-slate-400">Опубликуйте материал в сеть или сохраните черновик</p>
                     </div>
-                    <!-- Editor Tabs: Write / Preview -->
                     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
                         <button id="editorWriteTab" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-100 font-bold">
                             <i class="fa-solid fa-pen mr-1"></i> Текст
@@ -366,10 +329,8 @@
                     </div>
 
                     <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Содержание статьи (Markdown / HTML) *</label>
-                        </div>
-                        <textarea id="formContent" rows="10" required placeholder="Напишите статью с помощью Markdown (# Заголовок, **жирный**)..." 
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Содержание статьи (Markdown / HTML) *</label>
+                        <textarea id="formContent" rows="10" required placeholder="Напишите статью с помощью Markdown..." 
                                   class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-mono focus:ring-2 focus:ring-wikiBlue-500 focus:outline-none resize-y"></textarea>
                     </div>
 
@@ -387,7 +348,6 @@
                 </div>
             </div>
 
-            <!-- VIEW 3: BOOKMARKS VIEW -->
             <div id="bookmarksView" class="view-panel hidden max-w-3xl mx-auto w-full space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                     <div>
@@ -395,30 +355,20 @@
                         <p class="text-xs text-slate-400">Сохраненные для быстрого доступа статьи</p>
                     </div>
                 </div>
-
-                <div id="bookmarksListContainer" class="space-y-2">
-                    <!-- Dynamic -->
-                </div>
+                <div id="bookmarksListContainer" class="space-y-2"></div>
             </div>
 
-            <!-- VIEW 4: MY ARTICLES VIEW -->
             <div id="myArticlesView" class="view-panel hidden max-w-3xl mx-auto w-full space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Мои публикации</h1>
                         <p class="text-xs text-slate-400">Статьи, созданные вашим профилем</p>
                     </div>
-                    <button data-action="nav-create" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow">
-                        + Создать
-                    </button>
+                    <button data-action="nav-create" class="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow">+ Создать</button>
                 </div>
-
-                <div id="myArticlesListContainer" class="space-y-2">
-                    <!-- Dynamic -->
-                </div>
+                <div id="myArticlesListContainer" class="space-y-2"></div>
             </div>
 
-            <!-- VIEW 5: HISTORY VIEW -->
             <div id="historyView" class="view-panel hidden max-w-3xl mx-auto w-full space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                     <div>
@@ -429,13 +379,9 @@
                         <i class="fa-solid fa-trash-can mr-1"></i> Очистить
                     </button>
                 </div>
-
-                <div id="historyListContainer" class="space-y-2">
-                    <!-- Dynamic -->
-                </div>
+                <div id="historyListContainer" class="space-y-2"></div>
             </div>
 
-            <!-- VIEW 6: MODERATION VIEW (Oiyres) -->
             <div id="moderationView" class="view-panel hidden max-w-3xl mx-auto w-full space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                     <div>
@@ -445,12 +391,8 @@
                         <p class="text-xs text-slate-400">Заявки от пользователей на глобальную публикацию</p>
                     </div>
                 </div>
-
-                <div id="moderationListContainer" class="space-y-3">
-                    <!-- Dynamic -->
-                </div>
+                <div id="moderationListContainer" class="space-y-3"></div>
             </div>
-
         </main>
     </div>
 
@@ -482,7 +424,6 @@
                            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-wikiBlue-500 focus:outline-none">
                 </div>
 
-                <!-- Math Captcha Block -->
                 <div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                     <div class="flex items-center justify-between text-xs">
                         <span class="font-bold text-slate-700 dark:text-slate-300"><i class="fa-solid fa-calculator text-amber-500 mr-1"></i>Проверка</span>
@@ -504,27 +445,22 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
-        // Твои настройки из панели Firebase (замени на свои ключи после создания проекта)
-    // Твои настройки из панели Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2hu_Nrow0cC-EFzPHwE5Fww2ah_aC4Gw",
-        authDomain: "my-base-8a9da.firebaseapp.com",
-        projectId: "my-base-8a9da",
-        storageBucket: "my-base-8a9da.firebasestorage.app",
-        messagingSenderId: "559297046854",
-        appId: "1:559297046854:web:c4d0eef2fe0b2f4daadd47",
-        measurementId: "G-9Z4C1N7GNP"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2hu_Nrow0cC-EFzPHwE5Fww2ah_aC4Gw",
+            authDomain: "my-base-8a9da.firebaseapp.com",
+            projectId: "my-base-8a9da",
+            storageBucket: "my-base-8a9da.firebasestorage.app",
+            messagingSenderId: "559297046854",
+            appId: "1:559297046854:web:c4d0eef2fe0b2f4daadd47",
+            measurementId: "G-9Z4C1N7GNP"
+        };
 
-    // Инициализируем Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
         
-        // APP STATE MANAGEMENT
         const APP_STATE = {
             currentUser: null,
             theme: 'light',
@@ -539,13 +475,11 @@
             currentArticle: null
         };
 
-        // DOM UTILITY
         function safeAddListener(idOrEl, event, handler) {
             const el = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
             if (el) el.addEventListener(event, handler);
         }
 
-        // TOAST SYSTEM
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -560,65 +494,39 @@
             `;
 
             container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
             }, 3200);
         }
 
-        // STORAGE INIT
         function initAppStorage() {
             let users = JSON.parse(localStorage.getItem('mini_wiki_users') || '{}');
-            users['Oiyres'] = 'rk1234567'; // Enforce protected admin user
+            users['Oiyres'] = 'rk1234567';
             localStorage.setItem('mini_wiki_users', JSON.stringify(users));
 
             APP_STATE.theme = localStorage.getItem('mini_wiki_theme') || 'light';
             document.documentElement.className = APP_STATE.theme;
 
             APP_STATE.currentUser = JSON.parse(localStorage.getItem('mini_wiki_current_user') || 'null');
-            APP_STATE.articles = JSON.parse(localStorage.getItem('mini_wiki_articles') || '[]');
-            APP_STATE.pendingArticles = JSON.parse(localStorage.getItem('mini_wiki_pending') || '[]');
             APP_STATE.history = JSON.parse(localStorage.getItem('mini_wiki_history') || '[]');
             APP_STATE.bookmarks = JSON.parse(localStorage.getItem('mini_wiki_bookmarks') || '[]');
-
-            // Default initial article
-            if (APP_STATE.articles.length === 0) {
-                APP_STATE.articles.push({
-                    id: 'seed-1',
-                    title: 'Добро пожаловать в Мини-Википедию',
-                    category: 'Культура',
-                    author: 'Oiyres',
-                    mode: 'network',
-                    content: '### Добро пожаловать!\nВы находитесь в **Мини-Википедии** — универсальной интерактивной энциклопедии.\n\n Вы можете искать любые статьи из **Русской Википедии** через строку поиска выше, либо создавать свои собственные публикации с помощью встроенного редактора.',
-                    createdAt: new Date().toISOString()
-                });
-                localStorage.setItem('mini_wiki_articles', JSON.stringify(APP_STATE.articles));
-            }
         }
 
-        // MATH CAPTCHA ENGINE (15..100)
         function generateMathCaptcha() {
             const isPlus = Math.random() > 0.5;
             let num1 = Math.floor(Math.random() * 86) + 15;
             let num2 = Math.floor(Math.random() * 86) + 15;
-
             if (!isPlus && num1 < num2) [num1, num2] = [num2, num1];
-
             APP_STATE.captchaAnswer = isPlus ? num1 + num2 : num1 - num2;
 
             const qLabel = document.getElementById('captchaQuestion');
             if (qLabel) qLabel.textContent = `${num1} ${isPlus ? '+' : '-'} ${num2} = ?`;
-
             const input = document.getElementById('captchaAnswerInput');
             if (input) input.value = '';
         }
 
-        // MARKDOWN & HTML PARSER
         function parseMarkdown(text) {
             if (!text) return '';
             if (window.marked && typeof window.marked.parse === 'function') {
@@ -634,14 +542,11 @@
                 .replace(/\n/g, '<br>');
         }
 
-        // WIKIPEDIA API SERVICES
         async function fetchWikipediaArticle(title) {
             const url = `https://ru.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=text|displaytitle|categories&format=json&origin=*`;
             const response = await fetch(url);
             const data = await response.json();
-
             if (data.error) throw new Error(data.error.info || 'Статья не найдена');
-
             return {
                 title: data.parse.title,
                 html: data.parse.text['*'],
@@ -654,8 +559,7 @@
                 const url = `https://ru.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*`;
                 const response = await fetch(url);
                 const data = await response.json();
-                const title = data.query.random[0].title;
-                displayArticle(title, 'wiki');
+                displayArticle(data.query.random[0].title, 'wiki');
             } catch (err) {
                 showToast('Ошибка загрузки случайной статьи', 'error');
             }
@@ -667,16 +571,13 @@
                 const url = `https://ru.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=5&format=json&origin=*`;
                 const response = await fetch(url);
                 const data = await response.json();
-                const titles = data[1] || [];
-                return titles.map(t => ({ title: t, source: 'wiki' }));
+                return (data[1] || []).map(t => ({ title: t, source: 'wiki' }));
             } catch (err) {
                 return [];
             }
         }
 
-        // UI & BADGES UPDATE
         function updateUIState() {
-            // User Container
             const userContainer = document.getElementById('userAccountContainer');
             if (userContainer) {
                 if (APP_STATE.currentUser) {
@@ -701,7 +602,6 @@
                 }
             }
 
-            // Badges
             const myArticlesCount = APP_STATE.articles.filter(a => APP_STATE.currentUser && a.author === APP_STATE.currentUser.username).length;
             const myBadge = document.getElementById('myArticlesBadge');
             if (myBadge) myBadge.textContent = myArticlesCount;
@@ -712,7 +612,6 @@
             const historyBadge = document.getElementById('historyBadge');
             if (historyBadge) historyBadge.textContent = APP_STATE.history.length;
 
-            // Moderation tab visibility
             const modBtn = document.getElementById('moderationNavBtn');
             const modBadge = document.getElementById('moderationBadge');
             if (modBtn) {
@@ -725,7 +624,6 @@
             }
         }
 
-        // ARTICLE DISPLAY CONTROLLER
         async function displayArticle(titleOrId, source = 'wiki') {
             const container = document.getElementById('articleContentContainer');
             const titleEl = document.getElementById('articleTitle');
@@ -750,7 +648,14 @@
                         metaBadge.innerHTML = `<span class="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-2.5 py-0.5 rounded-md font-bold text-[11px]">Википедия</span>`;
                     }
                 } else {
-                    const local = APP_STATE.articles.find(a => a.id === titleOrId || a.title === titleOrId);
+                    let local = APP_STATE.articles.find(a => a.id === titleOrId || a.title.toLowerCase() === titleOrId.toLowerCase());
+                    
+                    if (!local) {
+                        const snap = await db.collection('articles').get();
+                        const allCloud = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        local = allCloud.find(a => a.id === titleOrId || a.title.toLowerCase() === titleOrId.toLowerCase());
+                    }
+
                     if (!local) throw new Error('Статья не найдена в вашей сети');
 
                     articleData = {
@@ -793,7 +698,6 @@
             container.addEventListener('click', (e) => {
                 const link = e.target.closest('a');
                 if (!link) return;
-
                 const href = link.getAttribute('href');
                 if (href && href.startsWith('/wiki/')) {
                     e.preventDefault();
@@ -803,7 +707,6 @@
             });
         }
 
-        // TABLE OF CONTENTS GENERATOR
         function generateTOC(container) {
             const headings = container.querySelectorAll('h1, h2, h3');
             const tocBox = document.getElementById('sidebarTocBox');
@@ -815,29 +718,22 @@
             }
 
             if (tocList) tocList.innerHTML = '';
-
             headings.forEach((h, idx) => {
                 const id = h.id || `toc-head-${idx}`;
                 h.id = id;
-
                 const li = document.createElement('li');
-                const indent = h.tagName === 'H3' ? 'pl-3' : '';
-                li.className = `${indent}`;
+                li.className = h.tagName === 'H3' ? 'pl-3' : '';
                 li.innerHTML = `<a href="#${id}" class="hover:underline text-wikiBlue-600 dark:text-wikiBlue-400 block truncate">${h.innerText}</a>`;
-                
                 li.querySelector('a').addEventListener('click', (e) => {
                     e.preventDefault();
                     h.scrollIntoView({ behavior: 'smooth' });
                     closeMobileSidebar();
                 });
-
                 if (tocList) tocList.appendChild(li);
             });
-
             if (tocBox) tocBox.classList.remove('hidden');
         }
 
-        // HISTORY & BOOKMARKS ENGINE
         function addToHistory(title, source) {
             APP_STATE.history = APP_STATE.history.filter(h => h.title !== title);
             APP_STATE.history.unshift({
@@ -846,7 +742,6 @@
                 source,
                 timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
             });
-
             if (APP_STATE.history.length > 25) APP_STATE.history.pop();
             localStorage.setItem('mini_wiki_history', JSON.stringify(APP_STATE.history));
             updateUIState();
@@ -868,7 +763,6 @@
                 });
                 showToast('Добавлено в закладки!', 'success');
             }
-
             localStorage.setItem('mini_wiki_bookmarks', JSON.stringify(APP_STATE.bookmarks));
             updateBookmarkButtonState();
             updateUIState();
@@ -879,12 +773,10 @@
             const icon = document.getElementById('bookmarkBtnIcon');
             const text = document.getElementById('bookmarkBtnText');
             const exists = APP_STATE.bookmarks.some(b => b.title === APP_STATE.currentArticle.title);
-
             if (icon) icon.className = exists ? 'fa-solid fa-bookmark text-amber-500' : 'fa-regular fa-bookmark';
             if (text) text.textContent = exists ? 'Сохранено' : 'В закладки';
         }
 
-        // AUTHENTICATION
         function openAuthModal() {
             generateMathCaptcha();
             const modal = document.getElementById('authModal');
@@ -909,7 +801,6 @@
             }
 
             let users = JSON.parse(localStorage.getItem('mini_wiki_users') || '{}');
-
             if (username.toLowerCase() === 'oiyres' && password !== 'rk1234567') {
                 showToast('Имя Oiyres защищено паролем!', 'error');
                 return;
@@ -927,7 +818,6 @@
 
             APP_STATE.currentUser = { username };
             localStorage.setItem('mini_wiki_current_user', JSON.stringify(APP_STATE.currentUser));
-            
             showToast(`Приветствуем, ${username}!`, 'success');
             closeAuthModal();
             updateUIState();
@@ -941,7 +831,6 @@
             switchView('home');
         }
 
-        // ARTICLE CREATION & MODERATION
         function handleArticleSubmit(e) {
             e.preventDefault();
             if (!APP_STATE.currentUser) {
@@ -967,22 +856,20 @@
             };
 
             if (mode === 'network' && APP_STATE.currentUser.username !== 'Oiyres') {
-                // 🚀 Сохраняем заявку на модерацию в облако Firebase
                 db.collection('pendingArticles').add(newArticle)
                     .then(() => {
                         showToast('Статья отправлена модератору Oiyres', 'success');
+                        switchView('home');
                     })
                     .catch((error) => {
                         console.error('Ошибка отправки на модерацию: ', error);
                         showToast('Ошибка при отправке статьи', 'error');
                     });
             } else {
-                // 🚀 Публикуем статью сразу в облако Firebase
                 db.collection('articles').add(newArticle)
                     .then((docRef) => {
                         showToast('Статья опубликована!', 'success');
-                        // Если нужно сразу отобразить созданную статью
-                        displayArticle(docRef.id, 'network');
+                        displayArticle(docRef.id, 'local');
                     })
                     .catch((error) => {
                         console.error('Ошибка публикации: ', error);
@@ -994,7 +881,6 @@
             updateUIState();
         }
 
-        // Prikaz liste moderacije sa dugmetom za predloženi pregled
         function renderModerationList() {
             const container = document.getElementById('moderationListContainer');
             if (!container) return;
@@ -1016,7 +902,6 @@
                     <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl font-mono">${art.content}</p>
                     
                     <div class="flex items-center justify-between pt-1">
-                        <!-- Dugme za predprosmotr (pregled) -->
                         <button onclick="previewPendingArticle('${art.firebaseId}')" class="px-3 py-1 text-xs font-semibold text-wikiBlue-600 bg-wikiBlue-50 dark:bg-wikiBlue-950/40 hover:bg-wikiBlue-100 rounded-lg">
                             <i class="fa-solid fa-eye mr-1"></i> Предпросмотр
                         </button>
@@ -1034,12 +919,10 @@
             `).join('');
         }
 
-        // Odobravanje članka preko Firebase-a
         function approvePendingArticle(firebaseId) {
             const art = APP_STATE.pendingArticles.find(a => a.firebaseId === firebaseId);
             if (!art) return;
 
-            // 1. Dodajemo članak u glavnu kolekciju 'articles' u Firebase-u
             db.collection('articles').add({
                 title: art.title,
                 category: art.category,
@@ -1048,7 +931,6 @@
                 mode: 'network',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                // 2. Brišemo iz kolekcije 'pendingArticles'
                 return db.collection('pendingArticles').doc(firebaseId).delete();
             }).then(() => {
                 showToast('Статья успешно одобрена и опубликована!', 'success');
@@ -1058,7 +940,6 @@
             });
         }
 
-        // Odbacivanje članka preko Firebase-a
         function rejectPendingArticle(firebaseId) {
             db.collection('pendingArticles').doc(firebaseId).delete()
                 .then(() => {
@@ -1070,7 +951,6 @@
                 });
         }
 
-        // Funkcija za predprosmotr članka na čekanju
         function previewPendingArticle(firebaseId) {
             const art = APP_STATE.pendingArticles.find(a => a.firebaseId === firebaseId);
             if (!art) return;
@@ -1089,11 +969,9 @@
             if (metaBadge) {
                 metaBadge.innerHTML = `<span class="bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-md font-bold text-[11px]">Модерация • Автор: ${art.author}</span>`;
             }
-            
             showToast('Режим предпросмотра заявки', 'info');
         }
 
-        // VIEW SWITCHER & DRAWER
         function switchView(viewName) {
             document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
 
@@ -1114,19 +992,16 @@
                 document.getElementById('moderationView').classList.remove('hidden');
                 renderModerationList();
             }
-
             closeMobileSidebar();
         }
 
         function renderBookmarksList() {
             const container = document.getElementById('bookmarksListContainer');
             if (!container) return;
-
             if (APP_STATE.bookmarks.length === 0) {
                 container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">У вас пока нет сохраненных закладок</div>`;
                 return;
             }
-
             container.innerHTML = APP_STATE.bookmarks.map(b => `
                 <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <button class="font-semibold text-xs sm:text-sm text-left text-slate-800 dark:text-slate-200 hover:text-wikiBlue-500" onclick="displayArticle('${b.id}', '${b.source}')">
@@ -1150,12 +1025,10 @@
         function renderHistoryList() {
             const container = document.getElementById('historyListContainer');
             if (!container) return;
-
             if (APP_STATE.history.length === 0) {
                 container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">История просмотров пуста</div>`;
                 return;
             }
-
             container.innerHTML = APP_STATE.history.map(item => `
                 <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <button class="text-left font-medium text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:text-wikiBlue-500 truncate mr-2" onclick="displayArticle('${item.title.replace(/'/g, "\\'")}', '${item.source}')">
@@ -1176,7 +1049,6 @@
             }
 
             const myArticles = APP_STATE.articles.filter(a => a.author === APP_STATE.currentUser.username);
-
             if (myArticles.length === 0) {
                 container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Вы еще не создали ни одной статьи</div>`;
                 return;
@@ -1186,7 +1058,7 @@
                 <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
                     <div>
                         <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">${art.title}</h4>
-                        <span class="text-[10px] text-slate-400">${art.category} • ${new Date(art.createdAt).toLocaleDateString('ru-RU')}</span>
+                        <span class="text-[10px] text-slate-400">${art.category}</span>
                     </div>
                     <button onclick="displayArticle('${art.id}', 'local')" class="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-lg font-semibold">
                         Читать
@@ -1199,30 +1071,25 @@
             const container = document.getElementById('moderationListContainer');
             if (!container) return;
 
-            // 🌟 Слушаем коллекцию 'pendingArticles' в Firebase в реальном времени!
             db.collection('pendingArticles').onSnapshot((snapshot) => {
                 APP_STATE.pendingArticles = [];
-                
                 snapshot.forEach((doc) => {
                     APP_STATE.pendingArticles.push({
                         firebaseId: doc.id, 
                         ...doc.data()
                     });
                 });
-
-                // Перерисовываем список модерации
                 renderModerationList();
+                updateUIState();
             });
         }
 
-        // LIVE SEARCH HANDLER
         function handleSearchInput(e) {
             const query = e.target.value.trim();
             const resultsBox = document.getElementById('searchResults');
             const clearBtn = document.getElementById('clearSearchBtn');
 
             if (clearBtn) clearBtn.classList.toggle('hidden', !query);
-
             if (!query) {
                 if (resultsBox) resultsBox.classList.add('hidden');
                 return;
@@ -1262,7 +1129,6 @@
             displayArticle(idOrTitle, source);
         }
 
-        // MOBILE SIDEBAR DRAWER TOGGLE
         function openMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
@@ -1283,16 +1149,13 @@
             }
         }
 
-        // INITIALIZATION
         window.onload = function() {
             initAppStorage();
 
-            // Mobile drawer bindings
             safeAddListener('mobileMenuBtn', 'click', openMobileSidebar);
             safeAddListener('closeSidebarBtn', 'click', closeMobileSidebar);
             safeAddListener('sidebarBackdrop', 'click', closeMobileSidebar);
 
-            // Navigation bindings
             document.querySelectorAll('[data-action]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const action = btn.getAttribute('data-action');
@@ -1313,26 +1176,21 @@
                 });
             });
 
-            // Category topic buttons
             document.querySelectorAll('.topic-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const topic = btn.getAttribute('data-topic');
-                    displayArticle(topic, 'wiki');
+                    displayArticle(btn.getAttribute('data-topic'), 'wiki');
                 });
             });
 
-            // Controls
             safeAddListener('randomArticleBtn', 'click', fetchRandomWikipediaArticle);
             safeAddListener('bookmarkToggleBtn', 'click', toggleBookmark);
 
-            // Theme toggle
             safeAddListener('themeToggleBtn', 'click', () => {
                 APP_STATE.theme = APP_STATE.theme === 'light' ? 'dark' : 'light';
                 document.documentElement.className = APP_STATE.theme;
                 localStorage.setItem('mini_wiki_theme', APP_STATE.theme);
             });
 
-            // Search input
             safeAddListener('searchInput', 'input', handleSearchInput);
             safeAddListener('clearSearchBtn', 'click', () => {
                 const input = document.getElementById('searchInput');
@@ -1340,21 +1198,16 @@
                 document.getElementById('searchResults').classList.add('hidden');
             });
 
-            // Typography controls
             safeAddListener('fontSansBtn', 'click', () => {
-                const el = document.getElementById('articleContentContainer');
-                if (el) el.className = 'article-content font-sans-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
+                document.getElementById('articleContentContainer').className = 'article-content font-sans-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
             });
             safeAddListener('fontSerifBtn', 'click', () => {
-                const el = document.getElementById('articleContentContainer');
-                if (el) el.className = 'article-content font-serif-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
+                document.getElementById('articleContentContainer').className = 'article-content font-serif-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
             });
             safeAddListener('fontMonoBtn', 'click', () => {
-                const el = document.getElementById('articleContentContainer');
-                if (el) el.className = 'article-content font-mono-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
+                document.getElementById('articleContentContainer').className = 'article-content font-mono-mode text-sm sm:text-base text-slate-800 dark:text-slate-200';
             });
 
-            // Zoom controls
             safeAddListener('zoomInBtn', 'click', () => {
                 if (APP_STATE.zoomLevel < 130) {
                     APP_STATE.zoomLevel += 10;
@@ -1370,15 +1223,11 @@
                 }
             });
 
-            // Auth modal events
             safeAddListener('closeAuthModalBtn', 'click', closeAuthModal);
             safeAddListener('refreshCaptchaBtn', 'click', generateMathCaptcha);
             safeAddListener('authForm', 'submit', handleAuthSubmit);
-
-            // Article creation
             safeAddListener('articleForm', 'submit', handleArticleSubmit);
 
-            // Editor preview tabs
             safeAddListener('editorWriteTab', 'click', () => {
                 document.getElementById('articleForm').classList.remove('hidden');
                 document.getElementById('editorPreviewContainer').classList.add('hidden');
@@ -1392,13 +1241,11 @@
                 document.getElementById('editorPreviewContainer').classList.remove('hidden');
             });
 
-            // Copy Link
             safeAddListener('copyArticleLinkBtn', 'click', () => {
-                document.execCommand('copy');
+                navigator.clipboard.writeText(window.location.href);
                 showToast('Ссылка скопирована!', 'success');
             });
 
-            // Clear history
             safeAddListener('clearAllHistoryBtn', 'click', () => {
                 APP_STATE.history = [];
                 localStorage.setItem('mini_wiki_history', '[]');
@@ -1407,27 +1254,34 @@
                 showToast('История очищена', 'info');
             });
 
-            // Initial view setup
-            // Initial view setup
             updateUIState();
-            
-            // 🌟 ЗАПУСКАЕМ СЛУШАТЕЛИ FIREBASE ПРИ СТАРТЕ!
             initModerationListener();
-            
-            // Загружаем статьи из базы данных Firebase (или оставляем дефолтную, если пусто)
+
             db.collection('articles').get().then((snapshot) => {
+                APP_STATE.articles = [];
                 if (!snapshot.empty) {
-                    APP_STATE.articles = [];
                     snapshot.forEach((doc) => {
                         APP_STATE.articles.push({
                             id: doc.id,
                             ...doc.data()
                         });
                     });
+                } else {
+                    const defaultArt = {
+                        title: 'Добро пожаловать в Мини-Википедию',
+                        category: 'Культура',
+                        author: 'Oiyres',
+                        mode: 'network',
+                        content: '### Добро пожаловать!\nВы находитесь в **Мини-Википедии** — универсальной интерактивной энциклопедии.',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    db.collection('articles').add(defaultArt).then((ref) => {
+                        APP_STATE.articles.push({ id: ref.id, ...defaultArt });
+                    });
                 }
                 displayArticle('Добро пожаловать в Мини-Википедию', 'local');
             }).catch((err) => {
-                console.log("Ошибка загрузки статей из облака, используем локальные:", err);
+                console.log("Ошибка загрузки статей:", err);
                 displayArticle('Добро пожаловать в Мини-Википедию', 'local');
             });
         };
