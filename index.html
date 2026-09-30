@@ -1362,8 +1362,28 @@ function renderModerationList() {
             });
 
             // Initial view setup
+            // Initial view setup
             updateUIState();
-            displayArticle('Добро пожаловать в Мини-Википедию', 'local');
+            
+            // 🌟 ЗАПУСКАЕМ СЛУШАТЕЛИ FIREBASE ПРИ СТАРТЕ!
+            initModerationListener();
+            
+            // Загружаем статьи из базы данных Firebase (или оставляем дефолтную, если пусто)
+            db.collection('articles').get().then((snapshot) => {
+                if (!snapshot.empty) {
+                    APP_STATE.articles = [];
+                    snapshot.forEach((doc) => {
+                        APP_STATE.articles.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                }
+                displayArticle('Добро пожаловать в Мини-Википедию', 'local');
+            }).catch((err) => {
+                console.log("Ошибка загрузки статей из облака, используем локальные:", err);
+                displayArticle('Добро пожаловать в Мини-Википедию', 'local');
+            });
         };
     </script>
 </body>
